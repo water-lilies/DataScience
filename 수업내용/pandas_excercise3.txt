@@ -1,0 +1,429 @@
+##############################################
+게임 매상 감소 원인 분석
+##############################################
+ 
+ 
+# 1단계 : CSV 파일을 읽어들이기
+ 
+# 2단계 :DAU 데이터에 Install 데이터를 결합시키기 
+ 
+
+# 3단계 : 1차결합된 데이터에 DPU 데이터를 결합시키기  
+ 
+# 4단계 : 비과금 유저의 과금액에 NaN을  0 대체해서  넣기  
+ 
+
+# 5단계 : 월차 집계를 위한 월 항목 컬럼 추가    
+ 
+
+#  6단계 :추가된 월 항목 컬럼으로 그룹핑후 과금액 집계 (합계)  
+ 
+
+ 
+#  7단계 :신규 유저인지 기존 유저인지 구분하는 항목의 새 컬럼변수 추가
+ 
+
+#  8단계 :로그 날짜의 월과 유저타입으로 그룹핑해서 과금액 집계  (합계)
+ 
+
+
+#  9단계 : 그래프로 데이터 시각화 
+ 
+
+
+######임명훈###########################################################
+# 1단계 : CSV 파일을 읽어들이기
+
+ 
+
+# 2단계 :DAU 데이터에 Install 데이터를 결합시키기 
+
+import pandas as pd
+
+dau = pd.read_csv("data/game/dau.csv")
+
+dpu = pd.read_csv("data/game/dpu.csv")
+
+install = pd.read_csv("data/game/install.csv")
+
+print(dau.shape)
+
+print(dpu.shape)
+
+print(install.shape)
+
+user_id = pd.merge(dau,install,on='user_id')
+
+print(user_id)
+
+user_id.shape
+
+ 
+
+ 
+
+ 
+
+ 
+
+# 3단계 : 1차결합된 데이터에 DPU 데이터를 결합시키기  
+
+merge_data=pd.merge(user_id,dpu,on='user_id',how='outer')
+
+merge_data.shape
+
+merge_data.head() 
+
+ 
+
+# 4단계 : 비과금 유저의 과금액에 NaN을  0 대체해서  넣기  
+
+merge_data['payment']=merge_data['payment'].fillna(0)
+
+merge_data['payment'].value_counts()
+
+ 
+
+# 5단계 : 월차 집계를 위한 월 항목 컬럼 추가    
+
+merge_data['new_date'] = pd.to_datetime(merge_data['log_date_x'])
+
+merge_data['m_date'] = merge_data['new_date'].dt.to_period(freq='M') 
+
+ 
+
+#  6단계 :추가된 월 항목 컬럼으로 그룹핑후 과금액 집계 (합계)  
+
+ 
+
+user_pay = merge_data.pivot_table('payment',index=['user_id'], columns='m_date',aggfunc=sum, margins=True, fill_value=0) 
+
+ 
+
+ 
+
+#  7단계 :신규 유저인지 기존 유저인지 구분하는 항목의 새 컬럼변수 추가
+
+ 
+
+ merge_data['install_date_D'] = pd.to_datetime(merge_data['install_date'])
+
+merge_data['using_gd'] = merge_data['new_date'] - merge_data['install_date_D']
+
+ 
+
+#  8단계 :로그 날짜의 월과 유저타입으로 그룹핑해서 과금액 집계  (합계)
+
+ 
+
+import numpy as np
+
+merge_data['pay_u'] = np.where(merge_data.using_gd == '0 days', 'new', 'old')
+
+total_pay = merge_data.pivot_table('payment',index=['user_id'], columns=['m_date','pay_u'],aggfunc='sum', margins=True, fill_value=0) 
+
+ 
+
+#  9단계 : 그래프로 데이터 시각화 
+
+--- seaborn 그래프
+
+import seaborn as sns
+
+sns.countplot(x="pay_u", data=merge_data)
+
+plt.title("old & new 결제 금액")
+
+plt.show()
+
+ 
+
+------ 히스트
+
+%matplotlib notebook
+
+%matplotlib inline
+
+import matplotlib.pyplot as plt
+
+ 
+
+ 
+
+ 
+
+#plt.hist([merge_data['pay_u']], histtype='bar', rwidth=11,width=0.2, facecolor='blue' )
+
+#plt.title('Old & New', size=30)
+
+ 
+
+#plt.set_xlabel('payment', size=12)
+
+#plt.set_ylabel('user type', size=12)
+
+#plt.legend(loc='best', fontsize=15)
+
+#plt.ylim(100000,10000000)
+
+
+#####이수진#######################################################
+#1단계 : CSV 파일을 읽어들이기
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+dau = pd.read_csv('./datas/game_ws1_datas/dau.csv').drop('app_name', axis = 1)
+dpu = pd.read_csv('./datas/game_ws1_datas/dpu.csv').drop('app_name', axis = 1)
+install = pd.read_csv('./datas/game_ws1_datas/install.csv').drop('app_name', axis = 1)
+
+#2단계 :DAU 데이터에 Install 데이터를 결합시키기
+df1.set_index('user_id', inplace = True)
+
+df1 = pd.merge(dau, install, on = 'user_id', how = 'outer')
+
+#3단계 : 1차결합된 데이터에 DPU 데이터를 결합시키기  
+total_df = pd.merge(df1, dpu, on = ['user_id', 'log_date'], how = 'outer')
+
+#4단계 : 비과금 유저의 과금액에 NaN을  0 대체해서  넣기  
+total_df['payment'].fillna(0, inplace = True)
+
+#5단계 : 월차 집계를 위한 월 항목 컬럼 추가  
+total_df[['log_date', 'install_date']] = total_df[['log_date', 'install_date']].apply(pd.to_datetime)
+total_df['month'] = total_df['log_date'].dt.to_period(freq = 'M')
+
+#6단계 :추가된 월 항목 컬럼으로 그룹핑후 과금액 집계 (합계)
+monthly_sum = total_df.groupby('month')['payment'].sum()
+print(monthly_sum)
+
+#7단계 :신규 유저인지 기존 유저인지 구분하는 항목의 새 컬럼변수 추가
+total_df['new'] = 0
+for k in range(len(total_df)):
+    if total_df['log_date'][k] == total_df['install_date'][k] or pd.isnull(total_df['log_date'][k]):
+        total_df['new'][k] = 'new'
+    else:
+        total_df['new'][k] = 'returning'
+
+#8단계 :로그 날짜의 월과 유저타입으로 그룹핑해서 과금액 집계  (합계)
+sum_df = total_df.groupby(['new', 'month'])['payment'].sum()
+print(sum_df.unstack())
+
+#9단계 : 그래프로 데이터 시각화
+
+#그래프1(bar)
+sum_df.unstack().plot(kind = 'bar', figsize = (10, 7))
+plt.show()
+
+graph_df = total_df.pivot_table(index='new', columns = 'log_date', values = 'payment').T
+
+#그래프2(area)
+from matplotlib import font_manager, rc
+font_path='C:\Windows\Fonts\Malgun.ttf'    
+font_name= font_manager.FontProperties(fname=font_path).get_name()
+rc('font', family=font_name)
+graph_df.plot(kind = 'area', stacked = True, alpha = 0.2, figsize = (20, 10))  
+
+plt.title('게임 내 결제액', size = 20)
+plt.xlabel('날짜', size = 15)
+plt.ylabel('결제액', size = 15)
+plt.legend(loc = 'best', fontsize = 17)
+plt.xticks(size = 10)
+plt.yticks(size = 10)
+plt.show()
+
+
+#####박경인 ######################################################
+import pandas as pd
+
+# csv 읽기
+dau_df = pd.read_csv('/content/gdrive/My Drive/data/dau.csv')
+install_df = pd.read_csv('/content/gdrive/My Drive/data/install.csv')
+dpu_df = pd.read_csv('/content/gdrive/My Drive/data/dpu.csv')
+
+# df 합치기
+merge1 = pd.merge(dau_df, install_df, on='user_id')
+merge2 = pd.merge(merge1, dpu_df, on=['log_date', 'user_id'], how='outer')
+merge2['payment'].fillna(0, inplace=True)
+merge2['log_month'] = pd.to_datetime(merge2['log_date']).dt.to_period('M')
+merge2.set_index('log_month', inplace=True)
+merge2['install_date'] = pd.to_datetime(merge2['install_date'])
+
+# 6, 7월로 분리
+df06 = merge2.loc['2013-06', :].copy()
+df07 = merge2.loc['2013-07', :].copy()
+
+# 6월을 old, new 유저로 분리
+df06['user_type'] = 'old'
+df06.loc[df06['install_date'].dt.month == 6, 'user_type'] = 'new'
+data06 = df06.groupby('user_type')['payment'].sum()
+
+# 7월을 old, new 유저로 분리
+df07['user_type'] = 'old'
+df07.loc[df07['install_date'].dt.month == 7, 'user_type'] = 'new'
+data07 = df07.groupby('user_type')['payment'].sum()
+
+# 다시 합치기
+df67 = pd.concat([data06, data07], axis=1)
+df67.index = ['신규유저', '기존유저']
+df67.columns = ['6월', '7월']
+
+# 출력
+df67.T.plot(kind='bar', rot=0, figsize=(10,6))
+
+
+#####최서환#########################################################
+%matplotlib inline
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+import warnings
+
+warnings.filterwarnings("ignore")
+
+# 1단계 : CSV 파일을 읽어들이기
+df_dau = pd.read_csv("dau.csv")
+df_install = pd.read_csv("install.csv")
+df_dpu = pd.read_csv("dpu.csv")
+
+
+# 2단계 :DAU 데이터에 Install 데이터를 결합시키기
+merge_stage1 = pd.merge(df_install, df_dau)
+merge_stage1.sort_values(by=['user_id'], axis=0)
+
+
+# 3단계 : 1차결합된 데이터에 DPU 데이터를 결합시키기
+merge_stage2 = pd.merge(merge_stage1, df_dpu, how='outer')
+merge_stage2.sort_values(by=['user_id'], axis=0)
+game_data = merge_stage2
+game_data = game_data[['user_id', 'app_name', 'install_date', 'log_date', 'payment']]
+
+
+# 4단계 : 비과금 유저의 과금액에 NaN을  0 대체해서 넣기
+game_data.fillna({'payment':0}, inplace=True)
+game_data.head()
+
+
+# 5단계 : 월차 집계를 위한 월 항목 컬럼 추가
+### 가입일 데이터 기준 월 추가
+game_data['install_Data'] = pd.to_datetime(game_data['install_date'])
+game_data['install_month'] = game_data['install_Data'].dt.to_period(freq='M')
+game_data.drop('install_Data', axis=1, inplace=True)
+
+### 과금일 데이터 기준 월 추가
+game_data['log_Data'] = pd.to_datetime(game_data['log_date'])
+game_data['log_month'] = game_data['log_Data'].dt.to_period(freq='M')
+game_data.drop('log_Data', axis=1, inplace=True)
+
+
+# 6단계 : 추가된 월 항목 컬럼으로 그룹핑후 과금액 집계 (합계)
+total_payment = game_data.groupby('log_month').sum()
+
+
+# 7단계 :신규 유저인지 기존 유b저인지 구분하는 항목의 새 컬럼변수 추가
+def user_seperate(df):
+    if df['log_month'] == "2013-07" and df['install_month'] == "2013-07":
+        return '신규'
+    else:
+        return '기존'
+
+game_data['install_month'] = game_data['install_month'].astype(str)       
+game_data['log_month'] = game_data['log_month'].astype(str)   
+game_data['user_seperate'] = game_data.apply(user_seperate, axis=1)
+display(game_data.head())
+
+# 8단계 : 로그 날짜의 월과 유저타입으로 그룹핑해서 과금액 집계  (합계)
+total_payment = game_data.groupby(['log_month', 'user_seperate']).sum()
+total_payment.drop('user_id', axis=1, inplace=True)
+display(total_payment)
+
+#  9단계 : 그래프로 데이터 시각화 (미완성, 20일 내 완료예정)
+#matplotlib 한글 폰트 오류 문제 해결
+from matplotlib import font_manager, rc
+font_path='malgun.ttf'
+font_name = font_manager.FontProperties(fname=font_path).get_name()
+rc('font',family=font_name)
+
+# 스타일 서식 지정
+plt.style.use('ggplot')
+
+
+#####서승훈 #####################################################
+import pandas as pd
+import matplotlib.pyplot as plt
+from matplotlib import font_manager, rc
+import csv
+import re
+
+plt.rc('font', family='Malgun Gothic')
+
+df1 = pd.read_csv('C:/Users/student/Desktop/game_ws1_datas/install.csv', header = None, encoding='cp949')
+df2 = pd.read_csv('C:/Users/student/Desktop/game_ws1_datas/dau.csv', header = None, encoding='cp949')
+df3 = pd.read_csv('C:/Users/student/Desktop/game_ws1_datas/dpu.csv', header = None, encoding='cp949')
+
+s6 = 0
+s7 = 0
+
+
+sd6 = []
+sd7 = []
+
+i = 1
+j = 1
+
+#유저데이터에 이용시작 데이터 결합
+
+res = pd.merge(df1, df2, how = 'outer')
+
+#1단계에서 결합한 데이터에 과금 데이터 결합
+
+rst = pd.merge(df3, res, how = 'outer')
+
+#월 컬럼추가
+result = rst.append({"월":""}, ignore_index=True)
+
+#신규 유저 및 기존 유저 구분  컬럼추가
+final = result.append({"유저타입":""}, ignore_index=True)
+
+#비과금 유저의 과금액에 NaN을 0으로 대체
+final = final.fillna(0)
+
+#신규/기존 유저 구분
+
+
+#월별 과금액 집계
+for final.iloc[i][0] in pd.date_range("2013-06-01", "2013-06-30"):
+    s6 = s6 + int(final.iloc[i, [3]])
+
+    sd6.append(s6)
+    i = i +1
+
+print("6월 과금액 총합 : ", s6)
+
+for result.iloc[j][0] in pd.date_range("2013-07-01", "2013-07-31"):
+
+    s7 = s7 + int(final.iloc[j, [3]])
+
+    sd7.append(s7)
+    j = j + 1
+
+print("7월 과금액 총합 : ", s7)
+
+#유저타입 과금액 집계
+
+x1 = pd.date_range("2013-06-01", "2013-06-30")
+y1 = sd6
+
+x2 = pd.date_range("2013-07-01", "2013-07-31")
+y2 = sd7
+
+
+        
+
+plt.plot(x1, y1, 'r--', x2, y2, 'b--')
+plt.title('월별 유저과금 누적합')
+plt.legend(labels = ['6월 과금집계', '7월 과금집계'])
+
+plt.show()
+

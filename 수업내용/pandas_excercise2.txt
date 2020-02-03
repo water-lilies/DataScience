@@ -1,0 +1,449 @@
+기상자료개방포털 홈페이지 https://data.kma.go.kr 강수량, 전운량, 황사 발생일수 등 기상과 관련된 다양한 데이터가 존재
+상단 메뉴에서 기후통계분석 → 기후분석을 선택하고 
+조건별통계 페이지에서 기온 정보를 알고 싶은 지역과 기간을 설정하여
+‘지역별 기온 데이터’를 CSV 다운로드로 내려받습니다.
+pandas  라이브러리를 이용하여 다음 데이터를 찾는 코드를 작성하시오
+
+#1번 서울지역의 2000년도~2018년도  날씨 데이터로부터  가장 기온이 낮았던 날짜와 기온 출력
+
+#2번 서울지역의  2000년도~2018년도 날씨 데이터로부터  강수량이 가장 많았던 날짜와 기온 출력
+
+#3번  서울지역의 2000년도~2018년도 날씨 데이터로부터 년도별 가장 높은 날의 기온과  년도별 가장 낮은 날의 기온을
+변화를 쉽게 파악할 수 있도록  시각화하시오(line chart)
+
+
+#####이수진##########################################################################################
+#1번 서울지역의 2000년도~2018년도  날씨 데이터로부터  가장 기온이 낮았던 날짜와 기온 출력
+
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+from matplotlib import font_manager, rc
+
+df_tmp = pd.read_csv('./datas/서울 기온.csv', skiprows = 6, encoding = 'euc-kr')
+df_preci = pd.read_csv('./datas/서울 강수량.csv', skiprows = 6, encoding = 'euc-kr')
+
+df_tmp.drop(columns = '지점', inplace = True)
+df_preci.drop(columns = '지점', inplace = True)
+
+df = pd.merge(df_tmp, df_preci, on = '날짜')
+df.set_index('날짜', inplace = True)
+
+min_tmp = df['최저기온(℃)'].min()
+min_tmp_date = df['최저기온(℃)'].idxmin()
+
+print('2000~2018년 최저 기온은 %s에 %s도로 기록되었습니다.'%(min_tmp_date, min_tmp))
+
+#2번 서울지역의  2000년도~2018년도 날씨 데이터로부터  강수량이 가장 많았던 날짜와 기온 출력
+max_preci = df['강수량(mm)'].max()
+max_preci_date = df['강수량(mm)'].idxmax()
+max_preci_tmp = df.loc[df['강수량(mm)'].idxmax(), '평균기온(℃)']
+
+print('2000~2018년 최고 강수량은 %s에 기록되었으며, 평균 기온은 %s도였습니다.'%(max_preci_date, max_preci_tmp))
+
+#3번  서울지역의 2000년도~2018년도 날씨 데이터로부터 년도별 가장 높은 날의 기온과  년도별 가장 높은 날의 기온을 변화를 쉽게 파악할 수 있도록  시각화하시오
+%matplotlib inline
+
+df.reset_index(inplace = True)
+f = lambda x: x.split('-')[0]
+df['날짜'] = df['날짜'].apply(f)
+df.set_index('날짜', inplace = True)
+
+#연도별 최저/최고 기온 데이터프레임 생성
+
+dict_min_max = {}
+for k in df.index:
+    dict_min_max[k] = (df.loc[k].min()['최저기온(℃)'], df.loc[k].max()['최고기온(℃)'] )
+df_min_max = pd.DataFrame(dict_min_max)
+
+df_min_max.index = ['lowest', 'highest']
+
+
+import seaborn as sns
+
+path = 'C:\Windows\Fonts\Batang.ttc'
+font_name = font_manager.FontProperties(fname = path).get_name()
+rc('font', family = font_name)
+
+plt.figure(figsize = (20, 10))
+sns.boxplot(data = df_min_max)
+plt.title("연도별 최저/최고 기온")
+plt.xlabel("연도")
+plt.ylabel("기온(℃)")
+plt.show()
+
+
+#####주혜진######################################################################
+#1번 서울지역의 2000년도~2018년도  날씨 데이터로부터  가장 기온이 낮았던 날짜와 기온 출력
+import pandas as pd
+import numpy as np
+df = pd.read_csv('./datas/기온데이터.csv', skiprows = [0,1,2,3,4,5,6])
+df.set_index(df['날짜'], inplace=True)
+del df['날짜']
+df.columns = ["지점", "평균기온", "최저기온","최고기온"]
+ser=df.loc['2000-01-01':'2018-12-31']['최저기온']
+min=ser.min()
+ser[ser==min]
+
+#2번 서울지역의  2000년도~2018년도 날씨 데이터로부터  강수량이 가장 많았던 날짜와 기온 출력
+df2 = pd.read_csv('./datas/강수량데이터.csv', skiprows = [0,1,2,3,4,5,6])
+df2.set_index(df2['날짜'], inplace=True)
+del df2['날짜']
+df2 = df2.fillna(0.0)
+df2.columns = ["지점", "강수량"]
+ser2=df2.loc['2000-01-01':'2018-12-31']['강수량']
+max=ser2.max()
+ser2[ser2==max]
+
+
+#3번  서울지역의 2000년도~2018년도 날씨 데이터로부터 년도별 가장 높은 날의 기온과  년도별 가장 높은 날의 기온을
+변화를 쉽게 파악할 수 있도록  시각화하시오(line chart)
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+df = pd.read_csv('./datas/기온데이터.csv', skiprows = [0,1,2,3,4,5,6])
+df
+# 날짜 컬럼 년도까지 자르기
+df['날짜'] = df['날짜'].str.slice(start=0, stop=4)
+df
+#날짜 , 최저기온, 최고기온 컬럼 얻어오기
+df=df.iloc[:,[0,3,4]]
+df
+#년도별 최저기온, 최고기온 평균 그룹
+df=df.groupby('날짜').mean()
+df
+#년도를 index로 하여 최저기온, 최고기온 series데이터 만들기
+print(df)
+minser = df.iloc[:,0]
+maxser = df.iloc[:,1]
+print(minser)
+print(maxser)
+#matplotlib 한글 폰트 오류 문제 해결
+from matplotlib import font_manager, rc
+font_name = font_manager.FontProperties(fname="c:/Windows/Fonts/malgun.ttf").get_name()
+rc('font', family=font_name)
+
+plt.figure(figsize=(20, 15))
+plt.title('서울시 최고 최저기온 비교')
+plt.plot(minser.index, minser.values ,label='최저기온')
+plt.plot(maxser.index, maxser.values,label='최고기온')
+
+
+plt.xlabel('년도')
+plt.ylabel('기온')
+plt.legend()
+plt.show()
+
+
+
+
+#####김명환#################################################################
+import pandas as pd
+
+import numpy as np
+
+import matplotlib.pyplot as plt
+
+#import matplotlib.font_manager as fm
+
+from matplotlib import font_manager, rc
+
+fm.get_fontconfig_fonts()
+
+font_location = 'font/malgunsl.ttf' # For Windows
+
+font_name = fm.FontProperties(fname=font_location).get_name()
+
+#matplotlib.rc('font', family=font_name)
+
+rc('font', family=font_name)
+
+
+#1번 서울지역의 2000년도~2018년도  날씨 데이터로부터  가장 기온이 낮았던 날짜와 기온 출력
+temp_df = pd.read_csv("./datas/서울기온데이터_일별.csv", encoding="cp949")
+temp_df
+
+temp_min = temp_df['최저기온(℃)'] == temp_df['최저기온(℃)'].min()
+temp_min_day = temp_df[temp_min]
+temp_max = temp_df['최고기온(℃)'] == temp_df['최고기온(℃)'].max()
+temp_max_day = temp_df[temp_max]
+
+print("2000년도 ~ 2018년도 최저기온 : {0}(℃) ,  날짜 : {1} " .format(df['최저기온(℃)'].min(), temp_min_day['일시'].values))
+print("2000년도 ~ 2018년도 최고기온 : {0}(℃) ,  날짜 : {1} " .format(df['최고기온(℃)'].max(), temp_max_day['일시'].values))
+
+
+
+#2번 서울지역의  2000년도~2018년도 날씨 데이터로부터  강수량이 가장 많았던 날짜와 기온 출력
+rain_df = pd.read_csv("./datas/서울강수량_일별.csv", encoding="cp949")
+rain_df
+
+heavy_rain = rain_df['강수량(mm)'] == rain_df['강수량(mm)'].max()
+heavy_rain_day = rain_df[heavy_rain]
+
+print("2000년도 ~ 2018년도 최고강수량 : {0}mm ,  날짜 : {1} " .format(rain_df['강수량(mm)'].max(), heavy_rain_day['일시'].values))
+
+
+
+
+#3번  서울지역의 2000년도~2018년도 날씨 데이터로부터 년도별 가장 높은 날의 기온과  년도별 가장 낮은 날의 기온을 변화를 쉽게 파악할 수 있도록  시각화하시오?? 강수량? 기온?
+%matplotlib inline
+year_temp = pd.read_csv("./datas/서울연도별기온.csv", encoding="cp949")
+year_temp_cor = year_temp[ ['일시','최고기온(℃)' , '최저기온(℃)']].drop(19)
+day = list(map(str,range(2000,2019)))
+
+# 그래프 객체 생성 (figure에 1개의 서브 플롯을 생성)
+fig = plt.figure(figsize=(20, 5))   
+ax = fig.add_subplot(1, 1, 1)
+
+# 축이름 추가
+ax.set_xlabel('기간', size=12)
+ax.set_ylabel('온도', size = 12)
+
+# 축 눈금 라벨 지정 및 90도 회전
+ax.set_xticklabels(day, rotation=90)
+
+# 축 눈금 라벨 크기
+ax.tick_params(axis="x", labelsize=10)
+ax.tick_params(axis="y", labelsize=10)
+
+
+# axe 객체에 plot 함수로 그래프 출력
+ax.plot(day, year_temp_cor['최고기온(℃)'], marker='o', markerfacecolor='green', 
+        markersize=5, color='red', linewidth=2, label='최고기온(℃)')
+
+ax.plot(day, year_temp_cor['최저기온(℃)'], marker='o', markerfacecolor='blue', 
+        markersize=5, color='skyblue', linewidth=2, label='최저기온(℃)')
+
+#제목 추가
+ax.set_title("서울 온도의 역사", size=20)
+
+# 범례 표시
+ax.legend(loc='best')
+
+
+#####장진영##########################################################
+#1번 서울지역의 2000년도~2018년도 날씨 데이터로부터 가장 기온이 낮았던 날짜와 기온 출력
+
+##가장 기온이 낮았던 날짜
+df_avgtemp=df['최저기온(℃)']
+df_min=df_avgtemp.idxmin()
+min_date=df.iloc[df_min,0]
+print(min_date)
+
+##그 날짜의 최저온도
+min_temp=df.iloc[df_min,3]
+print(min_temp)
+
+#2번 서울지역의  2000년도~2018년도 날씨 데이터로부터 강수량이 가장 많았던 날짜와 기온 출력
+
+##가장 강수량이 많았던 날짜
+df_rain=df['강수량(mm)']
+df_most=df_rain.idxmax()
+max_date=df.iloc[df_most,0]
+print(max_date)
+##그 날짜의 평균기온
+avg_temp=df.iloc[df_most,2]
+print(avg_temp)
+
+#3번
+df_graph=df[["최저기온(℃)","최고기온(℃)"]]
+df_graph.set_index("날짜")
+
+plt.figure(figsize=(14, 5))
+plt.xticks(rotation='vertical')
+plt.plot(df_graph.index, df_graph.values)
+plt.plot(df_graph.index, df_graph.values, linestyle='--')
+plt.title('Temperature Graph')
+plt.xlabel('Date')
+plt.ylabel('Temp')
+plt.legend(labels=['Max','Min'], loc='best')
+plt.show()  
+
+
+#####정성국###########################################################################
+import pandas as pd
+import numpy as np
+
+#데이터 불러오기 및 합치기
+df_temp=pd.read_csv('./data/서울기온정보.csv',encoding = 'euc-kr',header=10)
+df_rain=pd.read_csv('./data/서울강수량정보.csv',encoding = 'euc-kr',header=11)
+df_temp.drop(['\t\t지점번호','지점명'], axis=1,inplace=True)
+df_rain.drop(['\t지점번호','지점명'], axis=1,inplace=True)
+df_temp.set_index(['일시'],inplace=True)
+df_rain.set_index(['일시'],inplace=True)
+df_weather=df_temp.join(df_rain).iloc[:,[1,3,5]]
+display(df_weather.head())
+
+#1. 서울지역의 가장 기온이 낮았던 날짜와 기온
+print('가장 기온이 낮았던 날짜: ',df_weather['최저기온(℃)'].idxmin())
+print('최저기온:',df_weather['최저기온(℃)'].min(),"℃")
+
+#2. 서울지역의 강수량이 가장 많았던 날짜와 강수량
+print('가장 강수량이 많았던 날짜: ',df_weather['강수량(mm)'].idxmax())
+print('최고강수량:',df_weather['강수량(mm)'].max(),"mm")
+
+#3. 서울지역 기온 변화의 시각화
+
+#matplotlib import와 한글적용
+import matplotlib.pyplot as plt
+from matplotlib import font_manager, rc
+font_path='./data/malgun.ttf'
+font_name=font_manager.FontProperties(fname=font_path).get_name()
+rc('font', family=font_name)
+
+#Multi Index 만들기
+df_weather.reset_index(inplace=True)
+
+df_weather['연도']=df_weather['일시'].str.extract('(\d+)')
+df_weather['월']=df_weather['일시'].str.extract('-(\d+)')
+df_weather['일']=df_weather['일시'].str.extract('-(\d+)$')
+df_weather.set_index(['연도','월','일'],inplace=True)
+df_weather.drop(['일시'],axis=1,inplace=True)
+
+#연도별 최고기온, 강수량 추출
+x=0
+temp={}
+rain={}
+while x<365*19:
+    temp[df_weather.iloc[x:x+366]['최고기온(℃)'].idxmax()[0]]=df_weather.iloc[x:x+366]['최고기온(℃)'].max()
+    rain[df_weather.iloc[x:x+366]['강수량(mm)'].idxmax()[0]]=df_weather.iloc[x:x+366]['강수량(mm)'].max()
+    x=x+365
+    
+#연도별 최고기온,강수량 시리즈->데이터프레임으로 변경
+s_rain=pd.Series(rain)
+s_temp=pd.Series(temp)
+df_weat=pd.concat([s_rain,s_temp],axis=1)
+df_weat.reset_index(inplace=True)
+df_weat.columns=['연도','강수량','최고기온']
+
+#표 그리기
+plt.style.use('ggplot')
+fig=plt.figure(figsize=(20,5))
+ax2=fig.add_subplot(2,1,1)
+ax1=fig.add_subplot(2,1,2)
+ax1.plot(df_weat['연도'], df_weat['최고기온'],marker='o',markerfacecolor='green',
+        markersize=10, color='olive', linewidth=2, label='최고기온')
+ax2.plot(df_weat['연도'], df_weat['강수량'],marker='o',markerfacecolor='blue',
+        markersize=10, color='skyblue', linewidth=2, label='강수량')
+ax1.legend(loc='upper left',)
+ax2.legend(loc='lower left')
+ax2.set_title('서울의 최고기온과 강수량(2000~2018)', size=20)
+ax1.set_xlabel('기간', size=15)
+ax1.set_ylabel('최고기온', size = 15,)
+ax2.set_ylabel('강수량', size = 15)
+ax2.set_xticklabels(df_weat['연도'])
+ax2.tick_params(axis="x", labelsize=10)
+ax1.tick_params(axis="y", labelsize=10)
+plt.subplots_adjust(hspace=0)
+plt.show()
+
+
+
+####최서환##########################################
+import pandas as pd
+
+ 
+
+df = pd.read_csv("서울 기후 데이터.csv", sep=',', skiprows=[1, 2, 3, 4, 5, 6], header=1, encoding='CP949')
+
+ 
+
+# 강수량의 결측치는 0으로 변경
+
+df = df.fillna(0)
+
+ 
+
+#1번 서울지역의 2000년도~2018년도 날씨 데이터로부터 가장 기온이 낮았던 날짜와 기온 출력
+
+print("1. 가장 낮은 온도의 날짜 및 온도 : ")
+
+display(df.loc[df['최저기온(℃)'].idxmin(),['날짜', '최저기온(℃)']])
+
+ 
+
+ 
+
+#2번 서울지역의 2000년도~2018년도 날씨 데이터로부터 강수량이 가장 많았던 날짜와 강수량 출력
+
+print("2. 가장 낮은 강수량의 날짜 및 온도 : ")
+
+display(df.loc[df['강수량(mm)'].idxmax(),['날짜', '강수량(mm)']])
+
+ 
+
+ 
+
+#3번 서울지역의 2000년도~2018년도 날씨 데이터로부터 년도별 가장 높은 날의 기온과 년도별 가장 높은 날의 기온을 변화를 쉽게 파악할 수 있도록 시각화하시오
+
+%matplotlib inline
+
+import pandas as pd
+
+import matplotlib.pyplot as plt
+
+ 
+
+#matplotlib 한글 폰트 오류 문제 해결
+
+from matplotlib import font_manager, rc
+
+font_path='malgun.ttf'
+
+font_name = font_manager.FontProperties(fname=font_path).get_name()
+
+rc('font',family=font_name)
+
+ 
+
+# yyyy-mm-dd 형식을 yyyy로 변환 및 연도별 최고 기온 및 강수량 데이터프레임으로 추출
+
+df['날짜'] = df['날짜'].str.split('-').str[0]
+
+grouped = df.groupby(df['날짜']).max()
+
+grouped = grouped.reset_index()
+
+ 
+
+# 스타일 서식 지정
+
+plt.style.use('ggplot') 
+
+ 
+
+# 그래프 객체 생성 (figure에 2개의 서브 플롯을 생성)
+
+fig = plt.figure(figsize=(20, 10))   
+
+ax = fig.add_subplot(1, 1, 1)
+
+ 
+
+# axe 객체에 plot 함수로 그래프 출력
+
+ax.plot(grouped["날짜"], grouped['최고기온(℃)'], marker='o', markerfacecolor='green', 
+
+        markersize=10, color='olive', linewidth=2, label = "최고기온")
+
+ax.plot(grouped["날짜"], grouped['강수량(mm)'], marker='o', markerfacecolor='blue', 
+
+        markersize=10, color='skyblue', linewidth=2, label = "강수량")
+
+ 
+
+#범례, 차트제목, 축이름 표시
+
+ax.legend(loc = 'best')
+
+ax.set_title("연도별 최고 기온 및 강수량", size = 30)
+
+ax.set_xlabel('연도', size =20)
+
+ax.set_ylabel('기온 및 강우량', size =20)
+
+ 
+
+print("3. 서울지역의 2000년도~2018년도 날씨 데이터로부터 년도별 가장 높은 날의 기온과 강수량의 변화를 쉽게 파악할 수 있도록 시각화 :")
+
+plt.show()  # 변경사항 저장하고 그래프 출력

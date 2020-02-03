@@ -1,0 +1,491 @@
+#datas æ–√‡∆ƒ¿œ¿ª πﬁæ∆º≠  '∞Ê±‚µµ¿Œ±∏µ•¿Ã≈Õ'.csv∆ƒ¿œ¿ª ¿ÃøÎ«œø© 
+¥Ÿ¿Ω ≥ªøÎ¿ª ∆ƒ¿ÃΩ„  pandas∂Û¿Ã∫Í∑Ø∏Æ∏¶ ªÁøÎ«ÿº≠ ∞·∞˙∏¶ √‚∑¬«œººø‰
+1. ∆ƒ¿œ ≥ªøÎ¿ª ¿–¿∫ »ƒ ªÛ¿ß 5∞≥ µ•¿Ã≈Õ »Æ¿Œ
+2. πËø≠ ∞¥√º¿« ≈©±‚ »Æ¿Œ 
+3. ¡ﬂ∫π ¡ˆø™ ¡∏¿Á ø©∫Œ »Æ¿Œ  
+4. 2017≥‚ ºˆø¯Ω√ ¿Œ±∏¿« «’
+5. 2017≥‚ ¿Œ±∏∞° 50∏∏¿ÃªÛ¿Ã ¡ˆø™ √‚∑¬
+6. 2017≥‚ ∞Ê±‚µµ ¿¸√ºΩ√ø° ¥Î«— Ω√¥‹¿ß  ¿Œ±∏ ∆Ú±’  ∆Ú±’¿ª √‚∑¬«œΩ√ø¿ (¿¸√º¿Œ±∏/Ω√∞≥ºˆ)
+
+
+
+
+##¿Ãºˆ¡¯#########################################################
+# 1. ∆ƒ¿œ ≥ªøÎ¿ª ¿–¿∫ »ƒ ªÛ¿ß 5∞≥ µ•¿Ã≈Õ »Æ¿Œ
+import pandas as pd
+file_path = "./datas/∞Ê±‚µµ¿Œ±∏µ•¿Ã≈Õ.xlsx"
+df = pd.read_excel(file_path, encoding = 'euc-kr')
+print(df.head())
+
+# 2. πËø≠ ∞¥√º¿« ≈©±‚ »Æ¿Œ
+print(df.shape)
+
+# 3. ¡ﬂ∫π ¡ˆø™ ¡∏¿Á ø©∫Œ »Æ¿Œ
+print(True in list(df['±∏∫–'].duplicated()))
+
+# 4. 2017≥‚ ºˆø¯Ω√ ¿Œ±∏¿« «’
+df.set_index('±∏∫–', inplace = True)  
+import re
+char = r'ºˆø¯Ω√'
+df_sw = df.loc[[x for x in df.index if re.match(char, x) != None]]
+sw_sum = df_sw[2017].sum()
+print('2017≥‚ ºˆø¯Ω√ √— ¿Œ±∏¥¬ %d∏Ì'%sw_sum)
+
+# 5. 2017≥‚ ¿Œ±∏∞° 50∏∏¿ÃªÛ¿Ã ¡ˆø™ √‚∑¬
+df_overhalfM = df.iloc[:][df[2017]>=500000]
+print('2017≥‚ ¿Œ±∏ 50∏∏ ¿ÃªÛ¿Œ ¡ˆø™¿∫', [x for x in df_overhalfM.index])
+
+# 6. 2017≥‚ ∞Ê±‚µµ ¿¸√º ¿Œ±∏¿« Ω√∫∞ ¿Œ±∏ ∆Ú±’  
+mean = df[2017].mean()
+print('2017≥‚ ∞Ê±‚µµ Ω√∫∞ ∆Ú±’ ¿Œ±∏¥¬ %d∏Ì'% mean)
+
+
+
+##±Ëº∫πŒ##################################################
+import pandas as pd
+
+f = '∞Ê±‚µµ¿Œ±∏µ•¿Ã≈Õ.csv'
+df = pd.read_csv(f)
+
+#1π¯
+print("1π¯")
+print(df.head())
+print("\n")
+
+#2π¯
+print("2π¯")
+print(df.shape)
+print("\n")
+
+#3π¯
+print("3π¯")
+area_list = []
+check = True
+for i in range (len(df)):
+    str = ''
+    for j in range (len(df.loc[i]['±∏∫–'])):
+        if df.loc[i]['±∏∫–'][j] == 'Ω√' and j > 0:
+            str += df.loc[i]['±∏∫–'][j]
+            break
+        else:
+            str += df.loc[i]['±∏∫–'][j]
+    if str in area_list:
+        check = False
+    else:
+        area_list.append(str)
+if check:
+    print("True")
+else:
+    print("False")
+print("\n")
+
+#4π¯
+print("4π¯")
+sum = 0
+for i in range (len(df)):
+    if 'ºˆø¯Ω√' in df.loc[i]['±∏∫–']:
+        sum += df.loc[i]['2017']
+print(sum)
+print("\n")
+
+#5π¯
+print("5π¯")
+for i in range(len(df)):
+    if df.loc[i]['2017'] >= 500000:
+        print(df.loc[i]['±∏∫–'])
+print("\n")
+
+#6π¯
+print("6π¯")
+sum_list = [0 for i in range(len(area_list))]
+dup_list = [0 for i in range(len(area_list))]
+
+for i in range (len(area_list)):
+    for j in range(len(df)):
+        if area_list[i] in df.loc[j]['±∏∫–']:
+            sum_list[i] += df.loc[j]['2017']
+            dup_list[i] += 1
+
+average_list = [x/y for x, y in zip(sum_list, dup_list)]
+
+df2 = pd.DataFrame(average_list, index=area_list)
+print(df2)
+print("\n")
+
+
+
+###π⁄∞Ê¿Œ##############################################
+import pandas as pd
+import numpy as np
+
+df = pd.read_csv('/content/gdrive/My Drive/data/∞Ê±‚µµ¿Œ±∏µ•¿Ã≈Õ.csv', encoding='cp949')
+
+# 1π¯: ªÛ¿ß 5∞≥ µ•¿Ã≈Õ »Æ¿Œ
+print(df.head())
+
+# 2π¯: πËø≠ ∞¥√º¿« ≈©±‚ »Æ¿Œ
+print(df.shape)
+print(df.size)
+
+# 3π¯: ¡ﬂ∫π ¡ˆø™ ¡∏¿Á ø©∫Œ »Æ¿Œ
+if any(df['±∏∫–'].duplicated()):
+  print('¡ﬂ∫π¿Ã ¿÷Ω¿¥œ¥Ÿ.')
+else:
+  print('¡ﬂ∫π¿Ã æ¯Ω¿¥œ¥Ÿ.')
+
+# 4π¯: 2017≥‚ ºˆø¯Ω√ ¿Œ±∏¿« «’
+print(df[df['±∏∫–'].str.contains('ºˆø¯Ω√')]['2017'].sum())
+
+# 5π¯: 2017≥‚ ¿Œ±∏∞° 50∏∏¿ÃªÛ¿Ã ¡ˆø™ √‚∑¬
+print(df[df['2017'] > 500000]['±∏∫–'])
+
+# 6π¯: 2017≥‚ Ω√∫∞ ¿Œ±∏ ∆Ú±’
+import re
+
+def f(s):
+  result = p.findall(s['±∏∫–'])
+  return pd.Series((result[0],s['2017'])) if result else np.nan
+
+p = re.compile('[§°-§æ|§ø-§”|∞°-∆R]+Ω√')
+si_2017 = df.apply(f, axis=1)
+si_2017.columns = ['¡ˆø™', '2017']
+
+print(si_2017.groupby(['¡ˆø™'])['2017'].sum().mean())
+
+
+
+###¡÷«˝¡¯########################################################
+#1. ∆ƒ¿œ ≥ªøÎ¿ª ¿–¿∫ »ƒ ªÛ¿ß 5∞≥ µ•¿Ã≈Õ »Æ¿Œ
+
+df=pd.read_csv('∞Ê±‚µµ¿Œ±∏µ•¿Ã≈Õ.csv', encoding='utf-8')  # ∆ƒ¿œ decoding πÊΩƒ∞˙ encodingπÊΩƒ¿ª ∏¬√ﬂæÓæﬂ«‘
+
+df.head()
+
+
+
+#2. πËø≠ ∞¥√º¿« ≈©±‚ »Æ¿Œ 
+df.shape
+
+
+#3. ¡ﬂ∫π ¡ˆø™ ¡∏¿Á ø©∫Œ »Æ¿Œ  
+check = df['±∏∫–'].is_unique
+if check == True:
+    print("¡ﬂ∫πæ»µ ")
+else :
+    print("¡ﬂ∫πµ ")
+
+
+#4. 2017≥‚ ºˆø¯Ω√ ¿Œ±∏¿« «’
+ser = df['±∏∫–']
+suwon=df[ser.str.startswith('ºˆø¯Ω√')]
+suwon['2017'].sum(axis =0)
+
+
+#6. 2017≥‚ ∞Ê±‚µµ ¿¸√º ¿Œ±∏¿« Ω√∫∞ ¿Œ±∏ ∆Ú±’
+df[df['2017']>=500000]['±∏∫–'].values
+
+#2017≥‚ ∞Ê±‚µµ ¿¸√º ¿Œ±∏¿« Ω√∫∞ ¿Œ±∏ ∆Ú±’  
+ser = df['±∏∫–']
+
+v= ser.str.rfind('Ω√')
+arr= []
+idx=0
+for i in v.values:
+    arr.append(ser[idx][:i])
+    idx+=1
+
+uniq_area = pd.Series(arr).unique()
+
+for area in uniq_area:
+    print(area+"Ω√ ¿Œ±∏ ∆Ú±’", df[ser.str.startswith(area)].mean().mean())
+
+###√÷º≠»Ø########################################################
+
+import warnings 
+
+warnings.filterwarnings("ignore")
+
+import pandas as pd
+
+ 
+
+df = pd.read_csv("∞Ê±‚µµ¿Œ±∏µ•¿Ã≈Õ.csv", sep=',', engine='python')
+
+ 
+
+ 
+
+# 1. ∆ƒ¿œ ≥ªøÎ¿ª ¿–¿∫ »ƒ ªÛ¿ß 5∞≥ µ•¿Ã≈Õ »Æ¿Œ
+
+print("1. ªÛ¿ß 5∞≥ µ•¿Ã≈Õ :\n")
+
+display(df.head(5))
+
+ 
+
+ 
+
+# 2. πËø≠ ∞¥√º¿« ≈©±‚ »Æ¿Œ
+
+print("2. ¿‘∑¬µ» πËø≠ ∞¥√º¿« ≈©±‚ :", df.shape)
+
+ 
+
+ 
+
+# 3. ¡ﬂ∫π ¡ˆø™ ¡∏¿Á ø©∫Œ »Æ¿Œ
+
+print("3. ¡ﬂ∫π ¡ˆø™ ¡∏¿Á ø©∫Œ »Æ¿Œ :")
+
+display(df[df['±∏∫–'].duplicated()])
+
+ 
+
+ 
+
+# 4. 2017≥‚ ºˆø¯Ω√ ¿Œ±∏¿« «’
+
+import re
+
+ 
+
+total_population_suwon_2017 = 0
+
+pattern = r"ºˆø¯Ω√"
+
+for i in range(len(df)):
+
+    if re.match(pattern, df['±∏∫–'][i]):
+
+        total_population_suwon_2017 = total_population_suwon_2017 + df['2017'][i]
+
+print("4. 2017≥‚ ºˆø¯Ω√ ¿Œ±∏¿« «’ :", total_population_suwon_2017)
+
+ 
+
+ 
+
+# 5. 2017≥‚ ¿Œ±∏∞° 50∏∏¿ÃªÛ¿Ã ¡ˆø™ √‚∑¬
+
+fifethousand_region_2017 = []
+
+for i in range(len(df)):
+
+    if df["2017"][i] > 500000:
+
+        fifethousand_region_2017.append(df["±∏∫–"][i])
+
+print("5. 2017≥‚ ¿Œ±∏ 50∏∏ ¿ÃªÛ ¡ˆø™ :", fifethousand_region_2017)
+
+ 
+
+ 
+
+# 6. 2017≥‚ ∞Ê±‚µµ ¿¸√º ¿Œ±∏¿« Ω√∫∞ ¿Œ±∏ ∆Ú±’
+
+################### 2017≥‚ ∞Ê±‚µµ ¡ˆø™∫∞ ∆Ú±’ ¿Œ±∏ºˆ ###################
+
+total_popuation_gyeongi_2017 = int(df['2017'].sum() / len(df))
+
+print("6-1. 2017≥‚ ∞Ê±‚µµ ¡ˆø™∫∞ ∆Ú±’ ¿Œ±∏ºˆ :", total_popuation_gyeongi_2017, "∏Ì")
+
+ 
+
+################### 2017≥‚ ∞Ê±‚µµ ¿¸√º ¿Œ±∏¿« Ω√∫∞ ¿Œ±∏ ∆Ú±’ ###################
+
+# ¡§±‘«•«ˆΩƒ¿ª ≈Î«— **Ω√ « ≈Õ∏µ
+
+pattern = re.compile(r"(\w+[Ω√]\s*)")
+
+ 
+
+for i in range(len(df)):
+
+    m = pattern.match(df['±∏∫–'][i])
+
+    # dismatch Ω√ pass
+
+    if m == None:
+
+         df.drop(i, inplace=True)
+
+    else:
+
+        df['±∏∫–'][i] = m.group()
+
+ 
+
+# µµΩ√∫∞ ±◊∑Ï»≠
+
+means = round(df.groupby(df["±∏∫–"]).mean(),1)
+
+print("6-2. 2017≥‚ ∞Ê±‚µµ ¿¸√º ¿Œ±∏¿« Ω√∫∞ ¿Œ±∏ ∆Ú±’ :")
+
+display(means["2017"])
+
+
+
+###±Ë∏Ì»Ø############################################################
+import pandas as pd
+
+import numpy as np
+
+df = pd.read_csv("./datas/datas/∞Ê±‚µµ¿Œ±∏µ•¿Ã≈Õ.csv", encoding="cp949") 
+
+ 
+
+#1. ∆ƒ¿œ ≥ªøÎ¿ª ¿–¿∫ »ƒ ªÛ¿ß 5∞≥ µ•¿Ã≈Õ »Æ¿Œ 
+
+df.head(5) 
+
+ 
+
+#2. πËø≠ ∞¥√º¿« ≈©±‚ »Æ¿Œ 
+
+df.shape 
+
+ 
+
+#3. ¡ﬂ∫π ¡ˆø™ ¡∏¿Á ø©∫Œ »Æ¿Œ 
+
+#¡ﬂ∫π ¡ˆø™¿∫ æ¯¥Ÿ.
+
+if any(df['±∏∫–'].duplicated()): #any¥¬ True∞° «œ≥™ ≥™ø¿∏È True∑Œ π›»Ø
+
+    print("¡ﬂ∫π¡ˆø™ ¿÷¿Ω")
+
+else: #False
+
+    print("¡ﬂ∫π¡ˆø™ æ¯¿Ω")
+
+ 
+
+#4. 2017≥‚ ºˆø¯Ω√ ¿Œ±∏¿« «’ 
+
+pop_sum = 0
+
+for i in range(len(df)):
+
+    if df.loc[ i,'±∏∫–'].startswith('ºˆø¯Ω√'):
+
+        print(df.loc[ i,'±∏∫–'] , df.loc[i,'2017'])
+
+        pop_sum += df.loc[i,'2017']
+
+    
+
+print("2017≥‚ ºˆø¯Ω√ ¿Œ±∏¿« «’: ",pop_sum) 
+
+ 
+
+#5. 2017≥‚ ¿Œ±∏∞° 50∏∏¿ÃªÛ¿Ã ¡ˆø™ √‚∑¬
+
+for i in range(len(df)):
+
+    if df.loc[i,'2017'] > 500000:
+
+        print(df.loc[ i,'±∏∫–'] , "¿Œ±∏ºˆ: " ,df.loc[i,'2017'])
+
+ 
+
+#6. 2017≥‚ ∞Ê±‚µµ ¿¸√º ¿Œ±∏¿« Ω√∫∞ ¿Œ±∏ ∆Ú±’
+
+print(np.mean(df.loc[: , '2017'])) 
+
+ 
+
+###»´√∂ ############################################################
+#1. ∆ƒ¿œ ≥ªøÎ¿ª ¿–¿∫ »ƒ ªÛ¿ß 5∞≥ µ•¿Ã≈Õ »Æ¿Œ
+
+import pandas as pd
+
+file_path = './datas/∞Ê±‚µµ¿Œ±∏µ•¿Ã≈Õ.csv'
+df = pd.read_csv(file_path, nrows = 5)
+
+print(df)
+
+
+#2. πËø≠ ∞¥√º¿« ≈©±‚ »Æ¿Œ
+
+import pandas as pd
+
+file_path ='./datas/∞Ê±‚µµ¿Œ±∏µ•¿Ã≈Õ.csv'
+df = pd.read_csv(file_path) 
+
+print("∞≥√º ºˆ : ", len(df))
+
+
+#3 -1. ¡ﬂ∫π ¡ˆø™ ¡∏¿Á ø©∫Œ »Æ¿Œ 
+
+import pandas as pd
+
+file_path ='./datas/∞Ê±‚µµ¿Œ±∏µ•¿Ã≈Õ.csv'
+df = pd.read_csv(file_path)
+
+ 
+
+du = df.duplicated()
+
+ 
+
+print("¡ﬂ∫π¡ˆø™", du)
+
+ 
+
+#3 -2. ¡ﬂ∫π ¡ˆø™ ¡∏¿Á ø©∫Œ »Æ¿Œ######
+ 
+
+import pandas as pd
+
+file_path ='./datas/∞Ê±‚µµ¿Œ±∏µ•¿Ã≈Õ.csv'
+df = pd.read_csv(file_path)
+
+ 
+
+df2 = df.loc[:, ["±∏∫–"]]
+if df2.index.is_unique == True :
+    print("¡ﬂ∫π : ", "X")
+else :
+    print("¡ﬂ∫π : ", "O")
+
+ 
+#4. 2017≥‚ ºˆø¯Ω√ ¿Œ±∏¿« «’
+ 
+import pandas as pd
+
+file_path ='./datas/∞Ê±‚µµ¿Œ±∏µ•¿Ã≈Õ.csv'
+df = pd.read_csv(file_path)
+
+ 
+
+df.match = "ºˆø¯"      #match(' ')«¸Ωƒ¿∫ ø¿∑˘∞° πﬂª˝«’¥œ¥Ÿ
+df.sum()                  #∞™¿Ã ¥Ÿ∏®¥œ¥Ÿ
+
+ 
+#5. 2017≥‚ ¿Œ±∏∞° 50∏∏¿ÃªÛ¿Ã ¡ˆø™ √‚∑¬
+ 
+import pandas as pd
+
+file_path ='./datas/∞Ê±‚µµ¿Œ±∏µ•¿Ã≈Õ.csv'
+df = pd.read_csv(file_path)
+
+ 
+
+df2 = df[["±∏∫–", 2017]]
+df2[df2[2017] > 500000] 
+
+#6. 2017≥‚ ∞Ê±‚µµ ¿¸√º ¿Œ±∏¿« Ω√∫∞ ¿Œ±∏ ∆Ú±’ 
+
+import pandas as pd
+
+file_path ='./datas/∞Ê±‚µµ¿Œ±∏µ•¿Ã≈Õ.csv'
+df = pd.read_csv(file_path)
+
+
+df2 = df.set_index("±∏∫–")
+df2.mean(axis = 1)
+
+ 
+
+ 
+ 
